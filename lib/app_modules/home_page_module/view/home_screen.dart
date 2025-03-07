@@ -4,6 +4,7 @@ import 'package:vax_care_healthcare_provider/app_modules/home_page_module/widget
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/widget/profile_page_widget.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/view/login_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/view/vaccine_history_screen.dart';
+import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/view/vaccine_stock_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -141,6 +142,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => VaccineHistoryScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.inventory,
+                color: AppColors.firstColor,
+              ),
+              title: const Text(
+                'Vaccine Stock',
+                style: TextStyle(
+                  color: AppColors.firstColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => VaccineStockScreen(),
                   ),
                 );
               },
