@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
+import 'package:vax_care_healthcare_provider/app_modules/login_module/bloc/login_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/widget/password_text_field.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_helpers.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/form_logo.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/normal_text_field.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/overlay_loader_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,11 +32,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     FocusScope.of(context).unfocus();
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(),
+      final loginBloc = BlocProvider.of<LoginBloc>(context);
+
+      loginBloc.add(
+        LoginEvent.loggedIn(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
         ),
+      );
+    } else {
+      AppHelpers.showErrorDialogue(
+        context,
+        "Please add email and password",
       );
     }
   }
@@ -42,77 +53,117 @@ class _LoginScreenState extends State<LoginScreen> {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenSize.width * 0.05,
-              vertical: screenSize.height * 0.05,
+      body: BlocConsumer<LoginBloc, LoginState>(
+        listener: (context, state) {
+          state.whenOrNull(
+            loading: () {},
+            success: (response) {
+              if (response.status == "success") {
+                AppHelpers.showCustomSnackBar(
+                  context,
+                  "Loggedin successfully",
+                );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeScreen(),
+                  ),
+                );
+              } else {
+                AppHelpers.showErrorDialogue(
+                  context,
+                  "Login Failed",
+                );
+              }
+            },
+            failure: (errorMessage) => AppHelpers.showErrorDialogue(
+              context,
+              "Login Failed: $errorMessage",
             ),
-            constraints: BoxConstraints(maxWidth: screenSize.width * 0.85),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FormLogo(),
-                  _gap(),
-                  NormalTextField(
-                    textEditingController: _emailController,
-                    validatorFunction: (value) {
-                      // add email validation
-                      // if (value == null || value.isEmpty) {
-                      //   return 'Please enter some text';
-                      // }
-
-                      // bool emailValid = RegExp(
-                      //         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                      //     .hasMatch(value);
-                      // if (!emailValid) {
-                      //   return 'Please enter a valid email';
-                      // }
-
-                      return null;
-                    },
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    textFieldIcon: Icon(Icons.email_outlined),
-                    textInputType: TextInputType.emailAddress,
+          );
+        },
+        builder: (context, state) {
+          bool isLoading = state.maybeWhen(
+            loading: () => true,
+            orElse: () => false,
+          );
+          return OverlayLoaderWidget(
+            isLoading: isLoading,
+            childWidget: Form(
+              key: _formKey,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.width * 0.05,
+                    vertical: screenSize.height * 0.05,
                   ),
-                  _gap(),
-                  PasswordTextField(
-                    passwordController: _passwordController,
-                  ),
-                  _gap(),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+                  constraints:
+                      BoxConstraints(maxWidth: screenSize.width * 0.85),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FormLogo(),
+                        _gap(),
+                        NormalTextField(
+                          textEditingController: _emailController,
+                          validatorFunction: (value) {
+                            // add email validation
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter some text';
+                            }
+
+                            bool emailValid = RegExp(
+                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                .hasMatch(value);
+                            if (!emailValid) {
+                              return 'Please enter a valid email';
+                            }
+
+                            return null;
+                          },
+                          labelText: 'Email',
+                          hintText: 'Enter your email',
+                          textFieldIcon: Icon(Icons.email_outlined),
+                          textInputType: TextInputType.emailAddress,
                         ),
-                        backgroundColor: AppColors.firstColor,
-                      ),
-                      onPressed: _login,
-                      child: const Padding(
-                        padding: EdgeInsets.all(10.0),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        _gap(),
+                        PasswordTextField(
+                          passwordController: _passwordController,
+                        ),
+                        _gap(),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              backgroundColor: AppColors.firstColor,
+                            ),
+                            onPressed: _login,
+                            child: const Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

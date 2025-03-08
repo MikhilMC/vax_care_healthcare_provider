@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math';
+import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
+
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/profile_data_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
 
 class ProfilePageWidget extends StatefulWidget {
   const ProfilePageWidget({super.key});
@@ -11,117 +15,176 @@ class ProfilePageWidget extends StatefulWidget {
 
 class _ProfilePageWidgetState extends State<ProfilePageWidget> {
   @override
+  void initState() {
+    super.initState();
+    context.read<ProfileDataBloc>().add(ProfileDataEvent.profileDataFetched());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    // Sample Data (Replace with real data)
-    final String hospitalName = "Sunrise Healthcare Center";
-    final String address = "123 Main Street, Cityville";
-    final double latitude = 37.7749;
-    final double longitude = -122.4194;
-    final int tomorrowBookings = Random().nextInt(20); // Simulated count
+    return BlocBuilder<ProfileDataBloc, ProfileDataState>(
+      builder: (context, state) {
+        if (state is ProfileDataError) {
+          return CustomErrorWidget(
+            errorMessage: state.errorMessage,
+          );
+        }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenSize.width * 0.05,
-        vertical: screenSize.height * 0.01,
-      ),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        child: Padding(
+        if (state is! ProfileDataSuccess) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColors.firstColor,
+            ),
+          );
+        }
+
+        final profileData = state.profile;
+
+        return Padding(
           padding: EdgeInsets.symmetric(
             horizontal: screenSize.width * 0.05,
-            vertical: screenSize.height * 0.05,
+            vertical: screenSize.height * 0.01,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.local_hospital,
-                size: 40,
-                color: Colors.blue,
+          child: Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenSize.width * 0.05,
+                vertical: screenSize.height * 0.05,
               ),
-              const SizedBox(height: 10),
-              Text(
-                hospitalName,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
+                    Icons.local_hospital,
+                    size: 40,
+                    color: Colors.blue,
                   ),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(
-                      address,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.map,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(width: 5),
+                  const SizedBox(height: 10),
                   Text(
-                    "Lat: $latitude, Lon: $longitude",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.open_in_new,
-                      color: Colors.blue,
+                    profileData.name,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
-                    onPressed: () {
-                      _openGoogleMaps(latitude, longitude);
-                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Type: ${profileData.providerType}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          profileData.address,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.phone,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        profileData.phone,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.email,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        profileData.email,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.map,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Lat: ${profileData.latitude}, Lon: ${profileData.longitude}",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.open_in_new,
+                          color: Colors.blue,
+                        ),
+                        onPressed: () {
+                          _openGoogleMaps(
+                            double.parse(profileData.latitude),
+                            (double.parse(profileData.longitude)),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Tomorrow's Bookings:",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "${profileData.nextDayBookingCount}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Tomorrow's Bookings:",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "$tomorrowBookings",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

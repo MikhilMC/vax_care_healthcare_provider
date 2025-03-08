@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/profile_data_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/introduction_screen_module/view/introduction_screen.dart';
+import 'package:vax_care_healthcare_provider/app_modules/login_module/bloc/login_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,14 +13,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'VaxCare Healthcare Provider',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => LoginBloc(),
+        ),
+        BlocProvider(
+          create: (context) => ProfileDataBloc(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'VaxCare Healthcare Provider',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const IntroductionScreen(),
       ),
-      home: const IntroductionScreen(),
     );
   }
 }
