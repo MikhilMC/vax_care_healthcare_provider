@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:faker/faker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/view/appointment_details_screen.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/booking_today_bloc/bookings_today_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_helpers.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/empty_list.dart';
 
 final faker = Faker();
 final random = Random();
@@ -47,100 +53,88 @@ class _BookingTodayWidgetState extends State<BookingTodayWidget> {
   @override
   void initState() {
     super.initState();
-    _generateBookings();
-  }
-
-  void _generateBookings() {
-    bookings = List.generate(10, (index) {
-      return {
-        "id": faker.guid.guid(),
-        "childName": faker.person.firstName(),
-        "parentName": faker.person.name(),
-        "slot": slots[random.nextInt(slots.length)]
-      };
-    });
-
-    // Sorting bookings based on slot time
-    bookings.sort((a, b) {
-      DateTime timeA = _parseSlotTime(a["slot"]!);
-      DateTime timeB = _parseSlotTime(b["slot"]!);
-      return timeA.compareTo(timeB);
-    });
-
-    setState(() {});
-  }
-
-// Function to parse slot time string into DateTime for comparison
-  DateTime _parseSlotTime(String slot) {
-    final timePattern = RegExp(r'(\d+):(\d+) (\wM)');
-    final match = timePattern.firstMatch(slot);
-
-    if (match != null) {
-      int hour = int.parse(match.group(1)!);
-      int minute = int.parse(match.group(2)!);
-      String period = match.group(3)!;
-
-      if (period == "PM" && hour != 12) hour += 12;
-      if (period == "AM" && hour == 12) hour = 0;
-
-      return DateTime(
-          2000, 1, 1, hour, minute); // Using a dummy date for sorting
-    }
-
-    return DateTime(2000, 1, 1); // Default value (should never happen)
+    context.read<BookingsTodayBloc>().add(BookingsTodayEvent.bookingsFetched());
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenSize.width * 0.05,
-        vertical: screenSize.height * 0.01,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Today's Bookings",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView.separated(
-              itemCount: bookings.length,
-              itemBuilder: (context, index) {
-                final booking = bookings[index];
-                return Card(
-                  child: ListTile(
-                    leading:
-                        CircleAvatar(child: Text(booking["childName"]![0])),
-                    title: Text(booking["childName"]!),
-                    subtitle: Text("Parent: ${booking["parentName"]}"),
-                    trailing: Text(booking["slot"]!),
-                    onTap: () {
-                      // Navigate to AppointmentDetailsWidget
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AppointmentDetailsScreen(
-                            appointment: booking,
-                            vaccines: availableVaccines,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-              separatorBuilder: (_, __) => SizedBox(
-                height: screenSize.height * 0.005,
-              ),
+    return BlocBuilder<BookingsTodayBloc, BookingsTodayState>(
+      builder: (context, state) {
+        if (state is BookingsTodayError) {
+          return CustomErrorWidget(
+            errorMessage: state.errorMessage,
+          );
+        }
+
+        if (state is BookingsTodayEmpty) {
+          return EmptyList(
+            message: "No Bookings Today",
+          );
+        }
+
+        if (state is! BookingsTodaySuccess) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColors.firstColor,
             ),
+          );
+        }
+
+        final bookings = state.bookings;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenSize.width * 0.05,
+            vertical: screenSize.height * 0.01,
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Today's Bookings",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: bookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = bookings[index];
+                    final slot =
+                        "${AppHelpers.formatTime(booking.startTime)} - ${AppHelpers.formatTime(booking.endTime)}";
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: Text(booking.childName[0]),
+                        ),
+                        title: Text(booking.childName),
+                        subtitle: Text("Parent: ${booking.parentName}"),
+                        trailing: Text(slot),
+                        onTap: () {
+                          // Navigate to AppointmentDetailsWidget
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppointmentDetailsScreen(
+                                appointment: booking,
+                                vaccines: availableVaccines,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  separatorBuilder: (_, __) => SizedBox(
+                    height: screenSize.height * 0.005,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

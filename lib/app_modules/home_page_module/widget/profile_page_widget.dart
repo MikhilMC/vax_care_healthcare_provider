@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
 
-import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/profile_data_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/parent_data_bloc/profile_data_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
 
 class ProfilePageWidget extends StatefulWidget {

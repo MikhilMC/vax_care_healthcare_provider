@@ -66,4 +66,17 @@ class AppHelpers {
       ),
     );
   }
+
+  static String formatTime(String time) {
+    List<String> parts = time.split(":");
+    int hour = int.parse(parts[0]);
+    String minute = parts[1];
+    String period = hour >= 12 ? "PM" : "AM";
+
+    // Convert to 12-hour format
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour; // Handle midnight and noon
+
+    return "$hour:$minute $period";
+  }
 }

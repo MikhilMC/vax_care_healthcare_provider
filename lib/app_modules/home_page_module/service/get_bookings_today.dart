@@ -2,18 +2,19 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+
 import 'package:vax_care_healthcare_provider/app_constants/app_urls.dart';
+import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model.dart';
 
-import 'package:vax_care_healthcare_provider/app_modules/home_page_module/model/profile_model.dart';
-
-Future<ProfileModel> getProfileData() async {
+Future<List<VaccineBookingModel>> getBookingsToday() async {
   try {
-    int parentId = 22;
+    int healthcareProviderId = 22;
     Map<String, dynamic> params = {
-      "id": parentId.toString(),
+      "id": healthcareProviderId.toString(),
     };
+
     // Construct the URL with query parameters
-    final url = Uri.parse(AppUrls.getProfileDetailsUrl).replace(
+    final url = Uri.parse(AppUrls.getBookingTodayUrl).replace(
       queryParameters: params,
     );
 
@@ -24,12 +25,17 @@ Future<ProfileModel> getProfileData() async {
       },
     );
 
-    final Map<String, dynamic> decoded = jsonDecode(resp.body);
     if (resp.statusCode == 200) {
-      final response = ProfileModel.fromJson(decoded);
+      final List<dynamic> decoded = jsonDecode(resp.body);
+      final response =
+          decoded.map((item) => VaccineBookingModel.fromJson(item)).toList();
+
       return response;
     } else {
-      throw Exception('Failed to load response');
+      final Map<String, dynamic> errorResponse = jsonDecode(resp.body);
+      throw Exception(
+        '${errorResponse['message'] ?? 'Unknown error'}',
+      );
     }
   } on SocketException {
     throw Exception('Server error');

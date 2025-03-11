@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/appointment_form.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/child_details_card.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
 
 class AppointmentDetailsScreen extends StatefulWidget {
-  final Map<String, String> appointment;
+  final VaccineBookingModel appointment;
   final List<String> vaccines;
 
   const AppointmentDetailsScreen(
@@ -121,93 +122,3 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 }
-/**
- * SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Child: ${widget.appointment['childName']}",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    Text(
-                      "Parent: ${widget.appointment['parentName']}",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      "Slot: ${widget.appointment['slot']}",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Vaccines Administered",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        children: [
-                          ...widget.vaccines.map((vaccine) {
-                            return CheckboxListTile(
-                              title: Text(vaccine),
-                              value: vaccineChecks[vaccine] ?? false,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  vaccineChecks[vaccine] = value ?? false;
-                                });
-                              },
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: heightController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                          labelText: "Height (cm)",
-                          border: OutlineInputBorder()),
-                      onChanged: (value) => setState(() {}),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: weightController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                          labelText: "Weight (kg)",
-                          border: OutlineInputBorder()),
-                      onChanged: (value) => setState(() {}),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: isFormValid ? () {} : null,
-                      child: Text("Submit"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      )
- */
