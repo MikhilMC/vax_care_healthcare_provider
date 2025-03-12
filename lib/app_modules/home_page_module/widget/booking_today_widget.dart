@@ -117,8 +117,7 @@ class _BookingTodayWidgetState extends State<BookingTodayWidget> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => AppointmentDetailsScreen(
-                                appointment: booking,
-                                vaccines: availableVaccines,
+                                bookingId: booking.id,
                               ),
                             ),
                           );

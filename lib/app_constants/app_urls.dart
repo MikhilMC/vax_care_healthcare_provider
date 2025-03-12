@@ -8,4 +8,6 @@ class AppUrls {
       "$healthcareProviderUrl/health_provider_profile/";
   static const String getBookingTodayUrl =
       "$healthcareProviderUrl/bookings_for_today/";
+  static const String getBookingDetailsUrl =
+      "$healthcareProviderUrl/view_booking_details/";
 }

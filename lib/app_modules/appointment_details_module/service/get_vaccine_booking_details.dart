@@ -6,15 +6,16 @@ import 'package:http/http.dart' as http;
 import 'package:vax_care_healthcare_provider/app_constants/app_urls.dart';
 import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model/vaccine_booking_model.dart';
 
-Future<List<VaccineBookingModel>> getBookingsToday() async {
+Future<VaccineBookingModel> getVaccineBookingDetails({
+  required int bookingId,
+}) async {
   try {
-    int healthcareProviderId = 22;
     Map<String, dynamic> params = {
-      "id": healthcareProviderId.toString(),
+      "id": bookingId.toString(),
     };
 
     // Construct the URL with query parameters
-    final url = Uri.parse(AppUrls.getBookingTodayUrl).replace(
+    final url = Uri.parse(AppUrls.getBookingDetailsUrl).replace(
       queryParameters: params,
     );
 
@@ -25,10 +26,9 @@ Future<List<VaccineBookingModel>> getBookingsToday() async {
       },
     );
 
+    final Map<String, dynamic> decoded = jsonDecode(resp.body);
     if (resp.statusCode == 200) {
-      final List<dynamic> decoded = jsonDecode(resp.body);
-      final response =
-          decoded.map((item) => VaccineBookingModel.fromJson(item)).toList();
+      final response = VaccineBookingModel.fromJson(decoded);
 
       return response;
     } else {

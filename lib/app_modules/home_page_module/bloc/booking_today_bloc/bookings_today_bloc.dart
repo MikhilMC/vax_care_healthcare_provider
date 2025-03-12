@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model.dart';
+import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model/vaccine_booking_model.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/service/get_bookings_today.dart';
 
 part 'bookings_today_event.dart';

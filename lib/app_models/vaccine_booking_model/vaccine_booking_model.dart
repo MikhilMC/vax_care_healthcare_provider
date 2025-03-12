@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:vax_care_healthcare_provider/app_models/vaccine/vaccine.dart';
+
 List<VaccineBookingModel> vaccineBookingModelFromJson(String str) =>
     List<VaccineBookingModel>.from(
         json.decode(str).map((x) => VaccineBookingModel.fromJson(x)));
@@ -17,6 +19,7 @@ class VaccineBookingModel {
   String childName;
   String startTime;
   String endTime;
+  List<Vaccine> vaccines;
   String ageGroup;
   int maxChildren;
   DateTime date;
@@ -26,7 +29,6 @@ class VaccineBookingModel {
   int parent;
   int healthProvider;
   int timeSlot;
-  List<int> vaccines;
 
   VaccineBookingModel({
     required this.id,
@@ -34,6 +36,7 @@ class VaccineBookingModel {
     required this.childName,
     required this.startTime,
     required this.endTime,
+    required this.vaccines,
     required this.ageGroup,
     required this.maxChildren,
     required this.date,
@@ -43,7 +46,6 @@ class VaccineBookingModel {
     required this.parent,
     required this.healthProvider,
     required this.timeSlot,
-    required this.vaccines,
   });
 
   factory VaccineBookingModel.fromJson(Map<String, dynamic> json) =>
@@ -53,6 +55,8 @@ class VaccineBookingModel {
         childName: json["child_name"],
         startTime: json["start_time"],
         endTime: json["end_time"],
+        vaccines: List<Vaccine>.from(
+            json["vaccines"].map((x) => Vaccine.fromJson(x))),
         ageGroup: json["age_group"],
         maxChildren: json["max_children"],
         date: DateTime.parse(json["date"]),
@@ -62,7 +66,6 @@ class VaccineBookingModel {
         parent: json["parent"],
         healthProvider: json["health_provider"],
         timeSlot: json["time_slot"],
-        vaccines: List<int>.from(json["vaccines"].map((x) => x)),
       );
 
   Map<String, dynamic> toJson() => {
@@ -71,6 +74,7 @@ class VaccineBookingModel {
         "child_name": childName,
         "start_time": startTime,
         "end_time": endTime,
+        "vaccines": List<dynamic>.from(vaccines.map((x) => x.toJson())),
         "age_group": ageGroup,
         "max_children": maxChildren,
         "date":
@@ -81,6 +85,5 @@ class VaccineBookingModel {
         "parent": parent,
         "health_provider": healthProvider,
         "time_slot": timeSlot,
-        "vaccines": List<dynamic>.from(vaccines.map((x) => x)),
       };
 }

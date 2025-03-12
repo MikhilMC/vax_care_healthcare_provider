@@ -1,15 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
+import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/booking_details_bloc/booking_details_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/appointment_form.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/child_details_card.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
 
 class AppointmentDetailsScreen extends StatefulWidget {
-  final VaccineBookingModel appointment;
-  final List<String> vaccines;
+  final int bookingId;
 
-  const AppointmentDetailsScreen(
-      {super.key, required this.appointment, required this.vaccines});
+  const AppointmentDetailsScreen({
+    super.key,
+    required this.bookingId,
+  });
 
   @override
   State<AppointmentDetailsScreen> createState() =>
@@ -25,9 +31,11 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    for (var vaccine in widget.vaccines) {
-      vaccineChecks.putIfAbsent(vaccine, () => false);
-    }
+    context.read<BookingDetailsBloc>().add(
+          BookingDetailsEvent.bookingDetailsFetched(
+            widget.bookingId,
+          ),
+        );
   }
 
   @override
@@ -80,43 +88,65 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           horizontal: screenSize.width * 0.05,
           vertical: screenSize.height * 0.01,
         ),
-        child: CustomScrollView(
-          slivers: [
-            ChildDetailsCard(appointment: widget.appointment),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: screenSize.height * 0.05,
-              ),
-            ),
-            SliverList.builder(
-              itemBuilder: (context, index) {
-                return Card(
-                  elevation: 2,
-                  child: CheckboxListTile(
-                    title: Text(widget.vaccines[index]),
-                    value: vaccineChecks[widget.vaccines[index]] ?? false,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        vaccineChecks[widget.vaccines[index]] = value ?? false;
-                      });
-                    },
+        child: BlocBuilder<BookingDetailsBloc, BookingDetailsState>(
+          builder: (context, state) {
+            if (state is BookingDetailsError) {
+              return CustomErrorWidget(
+                errorMessage: state.errorMessage,
+              );
+            }
+
+            if (state is! BookingDetailsSuccess) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.firstColor,
+                ),
+              );
+            }
+
+            final bookingDetails = state.vaccineBooking;
+            return CustomScrollView(
+              slivers: [
+                ChildDetailsCard(appointment: bookingDetails),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: screenSize.height * 0.05,
                   ),
-                );
-              },
-              itemCount: widget.vaccines.length,
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: screenSize.height * 0.05,
-              ),
-            ),
-            AppointmentForm(
-              formKey: _formKey,
-              heightController: _heightController,
-              weightController: _weightController,
-              onSubmitted: _vaccinate,
-            ),
-          ],
+                ),
+                SliverList.builder(
+                  itemBuilder: (context, index) {
+                    return Card(
+                      elevation: 2,
+                      child: CheckboxListTile(
+                        title: Text(bookingDetails.vaccines[index].vaccineName),
+                        value: vaccineChecks[
+                                bookingDetails.vaccines[index].vaccineName] ??
+                            false,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            vaccineChecks[bookingDetails
+                                .vaccines[index].vaccineName] = value ?? false;
+                          });
+                        },
+                      ),
+                    );
+                  },
+                  itemCount: bookingDetails.vaccines.length,
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: screenSize.height * 0.05,
+                  ),
+                ),
+                AppointmentForm(
+                  formKey: _formKey,
+                  heightController: _heightController,
+                  weightController: _weightController,
+                  onSubmitted: _vaccinate,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
