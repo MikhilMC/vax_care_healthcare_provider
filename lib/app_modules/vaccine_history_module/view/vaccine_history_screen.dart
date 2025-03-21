@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import 'package:faker/faker.dart'; // For generating fake data
-import 'dart:math';
 
-import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart'; // For generating random data
+import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
+import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/hospital_vaccine_history_bloc/hospital_vaccine_history_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/widget/vaccine_history_card.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_helpers.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
+import 'package:vax_care_healthcare_provider/app_widgets/empty_list.dart'; // For generating random data
 
 class VaccineHistoryScreen extends StatefulWidget {
   const VaccineHistoryScreen({super.key});
@@ -13,9 +17,15 @@ class VaccineHistoryScreen extends StatefulWidget {
 }
 
 class _VaccineHistoryScreenState extends State<VaccineHistoryScreen> {
-  DateTime? selectedDate;
+  DateTime? _selectedDate;
   final TextEditingController _controller = TextEditingController();
-  List<Map<String, String>> childrenVaccinated = [];
+  bool _showHistory = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
 
   // Function to show date picker
   Future<void> _selectDate(BuildContext context) async {
@@ -25,40 +35,39 @@ class _VaccineHistoryScreenState extends State<VaccineHistoryScreen> {
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? now,
+      initialDate: _selectedDate ?? now,
       firstDate: firstDate,
       lastDate: lastDate,
     );
 
-    if (picked != null && picked != selectedDate) {
+    if (picked != null && picked != _selectedDate) {
       setState(() {
-        selectedDate = picked;
+        _selectedDate = picked;
+        _showHistory = false;
         _controller.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
   }
 
-  // Function to generate random vaccine history data
-  List<Map<String, String>> _generateVaccineHistory() {
-    final faker = Faker();
-    final random = Random();
-    List<Map<String, String>> childrenVaccinated = [];
-    for (int i = 0; i < 10; i++) {
-      childrenVaccinated.add({
-        'childName': faker.person.name(),
-        'parentName': faker.person.name(),
-        'phoneNumber': faker.phoneNumber.us(),
-      });
-    }
-    childrenVaccinated.shuffle(random);
-    return childrenVaccinated;
-  }
-
   // Function to handle submit button press
   void _onSubmit() {
-    if (selectedDate != null) {
+    if (_selectedDate != null) {
+      final HospitalVaccineHistoryBloc hospitalVaccineHistoryBloc =
+          BlocProvider.of<HospitalVaccineHistoryBloc>(context);
+
+      hospitalVaccineHistoryBloc.add(
+          HospitalVaccineHistoryEvent.hospitalVaccineHistoryFetched(
+              _selectedDate!));
       setState(() {
-        childrenVaccinated = _generateVaccineHistory();
+        _showHistory = true;
+      });
+    } else {
+      AppHelpers.showErrorDialogue(
+        context,
+        "Please select date.",
+      );
+      setState(() {
+        _showHistory = false;
       });
     }
   }
@@ -116,51 +125,42 @@ class _VaccineHistoryScreenState extends State<VaccineHistoryScreen> {
             ),
             const SizedBox(height: 16),
             // ListView to show children vaccinated
-            if (childrenVaccinated.isNotEmpty)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: childrenVaccinated.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Child: ${childrenVaccinated[index]['childName']}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Parent: ${childrenVaccinated[index]['parentName']}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Phone: ${childrenVaccinated[index]['phoneNumber']}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+            if (_showHistory)
+              BlocBuilder<HospitalVaccineHistoryBloc,
+                  HospitalVaccineHistoryState>(
+                builder: (context, state) {
+                  if (state is HospitalVaccineHistoryError) {
+                    return CustomErrorWidget(
+                      errorMessage: state.errorMessage,
+                    );
+                  }
+
+                  if (state is HospitalVaccineHistoryEmpty) {
+                    return EmptyList(
+                      message: "No vaccination on this day",
+                    );
+                  }
+
+                  if (state is! HospitalVaccineHistorySuccess) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.firstColor,
                       ),
                     );
-                  },
-                ),
+                  }
+
+                  final hospitalVaccineHistory = state.vaccineHistory;
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: hospitalVaccineHistory.length,
+                      itemBuilder: (context, index) {
+                        return VaccineHistoryCard(
+                          childrenVaccinated: hospitalVaccineHistory[index],
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
           ],
         ),
