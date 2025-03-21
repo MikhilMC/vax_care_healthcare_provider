@@ -1,14 +1,15 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
+import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/model/vaccine_stock_model.dart';
 
 class VaccineStockCard extends StatelessWidget {
   const VaccineStockCard({
     super.key,
-    required this.vaccine,
-    required this.stock,
+    required this.vaccineStock,
   });
 
-  final Map<String, String> vaccine;
-  final int stock;
+  final VaccineStockModel vaccineStock;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class VaccineStockCard extends StatelessWidget {
           children: [
             // Vaccine Name
             Text(
-              vaccine['name']!,
+              vaccineStock.vaccineDetails.vaccineName,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -36,7 +37,7 @@ class VaccineStockCard extends StatelessWidget {
 
             // Vaccine Description
             Text(
-              vaccine['description']!,
+              vaccineStock.vaccineDetails.protection,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -54,7 +55,7 @@ class VaccineStockCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Age Group: ${vaccine['ageGroup']}',
+                  'Age Group: ${vaccineStock.vaccineDetails.ageGroup}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -74,7 +75,7 @@ class VaccineStockCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Available Stock: $stock',
+                  'Available Stock: ${vaccineStock.stock}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

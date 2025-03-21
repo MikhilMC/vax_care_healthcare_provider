@@ -6,6 +6,7 @@ import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/p
 import 'package:vax_care_healthcare_provider/app_modules/introduction_screen_module/view/introduction_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/bloc/login_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/hospital_vaccine_history_bloc/hospital_vaccine_history_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/bloc/vaccine_stock_bloc/vaccine_stock_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => HospitalVaccineHistoryBloc(),
+        ),
+        BlocProvider(
+          create: (context) => VaccineStockBloc(),
         ),
       ],
       child: MaterialApp(
