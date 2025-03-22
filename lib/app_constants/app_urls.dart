@@ -13,4 +13,6 @@ class AppUrls {
   static const String getHospitalVaccineHistoryUrl =
       "$healthcareProviderUrl/list_vaccination_history/";
   static const String getVaccineStockUrl = "$healthcareProviderUrl/stock_list/";
+  static const String requestVaccineStockUrl =
+      "$healthcareProviderUrl/stock-requests/";
 }

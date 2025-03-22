@@ -6,6 +6,7 @@ import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/booking_details_bloc/booking_details_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/appointment_form.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/child_details_card.dart';
+import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/widget/vaccine_checklist_card.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/custom_error_widget.dart';
 
@@ -115,20 +116,17 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                 ),
                 SliverList.builder(
                   itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 2,
-                      child: CheckboxListTile(
-                        title: Text(bookingDetails.vaccines[index].vaccineName),
-                        value: vaccineChecks[
-                                bookingDetails.vaccines[index].vaccineName] ??
-                            false,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            vaccineChecks[bookingDetails
-                                .vaccines[index].vaccineName] = value ?? false;
-                          });
-                        },
-                      ),
+                    return VaccineChecklistCard(
+                      vaccine: bookingDetails.vaccines[index],
+                      vaccineCheckValue: vaccineChecks[
+                              bookingDetails.vaccines[index].vaccineName] ??
+                          false,
+                      onSelect: (value) {
+                        setState(() {
+                          vaccineChecks[bookingDetails
+                              .vaccines[index].vaccineName] = value ?? false;
+                        });
+                      },
                     );
                   },
                   itemCount: bookingDetails.vaccines.length,
