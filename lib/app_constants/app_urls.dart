@@ -15,4 +15,6 @@ class AppUrls {
   static const String getVaccineStockUrl = "$healthcareProviderUrl/stock_list/";
   static const String requestVaccineStockUrl =
       "$healthcareProviderUrl/stock-requests/";
+  static const String vaccinateChildUrl =
+      "$healthcareProviderUrl/update_vaccination_status/";
 }

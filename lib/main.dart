@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/booking_details_bloc/booking_details_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/vaccinate_child_bloc/vaccinate_child_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/booking_today_bloc/bookings_today_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/parent_data_bloc/profile_data_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/introduction_screen_module/view/introduction_screen.dart';
@@ -40,6 +41,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => RequestStockBloc(),
+        ),
+        BlocProvider(
+          create: (context) => VaccinateChildBloc(),
         ),
       ],
       child: MaterialApp(
