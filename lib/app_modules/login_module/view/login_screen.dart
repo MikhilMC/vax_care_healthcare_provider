@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/bloc/login_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/widget/password_text_field.dart';
 import 'package:vax_care_healthcare_provider/app_utils/app_helpers.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/form_logo.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/normal_text_field.dart';
 import 'package:vax_care_healthcare_provider/app_widgets/overlay_loader_widget.dart';
+import 'package:vax_care_healthcare_provider/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,23 +60,32 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           state.whenOrNull(
             loading: () {},
-            success: (response) {
+            success: (response) async {
               if (response.status == "success") {
-                AppHelpers.showCustomSnackBar(
-                  context,
-                  "Loggedin successfully",
+                await AppLocalstorage.hospitalLogin(
+                  hospitalName: response.name,
+                  hospitalId: response.user,
                 );
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
-                  ),
-                );
+
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  MyApp.navigatorKey.currentState?.pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                  );
+
+                  AppHelpers.showCustomSnackBar(
+                    context,
+                    "Loggedin successfully",
+                  );
+                });
               } else {
-                AppHelpers.showErrorDialogue(
-                  context,
-                  "Login Failed",
-                );
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  AppHelpers.showErrorDialogue(
+                    context,
+                    "Login Failed",
+                  );
+                });
               }
             },
             failure: (errorMessage) => AppHelpers.showErrorDialogue(

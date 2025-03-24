@@ -5,10 +5,11 @@ import 'package:http/http.dart' as http;
 
 import 'package:vax_care_healthcare_provider/app_constants/app_urls.dart';
 import 'package:vax_care_healthcare_provider/app_models/vaccine_booking_model/vaccine_booking_model.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 
 Future<List<VaccineBookingModel>> getBookingsToday() async {
   try {
-    int healthcareProviderId = 22;
+    int healthcareProviderId = await AppLocalstorage.getHospitalId();
     Map<String, dynamic> params = {
       "id": healthcareProviderId.toString(),
     };

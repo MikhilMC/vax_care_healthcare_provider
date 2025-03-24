@@ -5,10 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:vax_care_healthcare_provider/app_constants/app_urls.dart';
 
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/model/profile_model.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 
 Future<ProfileModel> getProfileData() async {
   try {
-    int parentId = 22;
+    int parentId = await AppLocalstorage.getHospitalId();
     Map<String, dynamic> params = {
       "id": parentId.toString(),
     };

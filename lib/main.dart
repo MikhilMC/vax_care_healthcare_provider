@@ -1,21 +1,53 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
+
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/booking_details_bloc/booking_details_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/appointment_details_module/bloc/vaccinate_child_bloc/vaccinate_child_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/booking_today_bloc/bookings_today_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/hospital_name_bloc/hospital_name_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/parent_data_bloc/profile_data_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/view/home_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/introduction_screen_module/view/introduction_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/bloc/login_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_modules/login_module/view/login_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/hospital_vaccine_history_bloc/hospital_vaccine_history_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/bloc/request_stock_bloc/request_stock_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/bloc/vaccine_stock_bloc/vaccine_stock_bloc.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  bool isFirstLaunch = await AppLocalstorage.getIntroScreenStatus();
+  bool isLoggedIn = await AppLocalstorage.getLoginStatus();
+
+  Widget initialScreen;
+
+  if (isFirstLaunch) {
+    initialScreen = const IntroductionScreen();
+  } else {
+    if (isLoggedIn) {
+      initialScreen = const HomeScreen();
+    } else {
+      initialScreen = const LoginScreen();
+    }
+  }
+  runApp(MyApp(
+    initialScreen: initialScreen,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget initialScreen;
+  const MyApp({
+    super.key,
+    required this.initialScreen,
+  });
+
+  // Add a global navigator key
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +77,19 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => VaccinateChildBloc(),
         ),
+        BlocProvider(
+          create: (context) => HospitalNameBloc(),
+        ),
       ],
       child: MaterialApp(
         title: 'VaxCare Healthcare Provider',
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.firstColor),
           useMaterial3: true,
         ),
-        home: const IntroductionScreen(),
+        home: initialScreen,
       ),
     );
   }

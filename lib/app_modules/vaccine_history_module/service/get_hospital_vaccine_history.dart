@@ -5,12 +5,13 @@ import 'package:http/http.dart' as http;
 
 import 'package:vax_care_healthcare_provider/app_constants/app_urls.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/model/vaccine_history_model.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 
 Future<List<VaccineHistoryModel>> getHospitalVaccineHistory({
   required DateTime date,
 }) async {
   try {
-    int healthcareProviderId = 22;
+    int healthcareProviderId = await AppLocalstorage.getHospitalId();
     Map<String, dynamic> params = {
       "id": healthcareProviderId.toString(),
       "date":

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_constants/app_colors.dart';
+import 'package:vax_care_healthcare_provider/app_modules/home_page_module/bloc/hospital_name_bloc/hospital_name_bloc.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/widget/booking_today_widget.dart';
 import 'package:vax_care_healthcare_provider/app_modules/home_page_module/widget/profile_page_widget.dart';
 import 'package:vax_care_healthcare_provider/app_modules/login_module/view/login_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_history_module/view/vaccine_history_screen.dart';
 import 'package:vax_care_healthcare_provider/app_modules/vaccine_stock_module/view/vaccine_stock_screen.dart';
+import 'package:vax_care_healthcare_provider/app_utils/app_localstorage.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,16 +32,41 @@ class _HomeScreenState extends State<HomeScreen> {
       Center(child: ProfilePageWidget()),
     ];
     super.initState();
+    context
+        .read<HospitalNameBloc>()
+        .add(HospitalNameEvent.hospitalNameFetched());
+  }
+
+  Future<void> _logout() async {
+    await AppLocalstorage.hospitalLogout();
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Hello, John"),
+        title: BlocBuilder<HospitalNameBloc, HospitalNameState>(
+          builder: (context, state) {
+            if (state is HospitalNameError) {
+              return Text("Error: ${state.errorMessage}");
+            }
+
+            if (state is! HospitalNameSuccess) {
+              return const Text("Loading...");
+            }
+            return Text(state.hospitalName);
+          },
+        ),
         titleTextStyle: const TextStyle(
-          color: Colors.black,
-          fontSize: 35,
+          color: AppColors.firstColor,
+          fontSize: 25,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -180,14 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 20,
                 ),
               ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginScreen(),
-                  ),
-                );
-              },
+              onTap: _logout,
             ),
           ],
         ),
